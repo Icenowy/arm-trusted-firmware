@@ -1,3 +1,6 @@
+# Trusty comes with AArch64 toolchain
+dist: trusty
+
 # use container-based infrastructure
 sudo: false
 
