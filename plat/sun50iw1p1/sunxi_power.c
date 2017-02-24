@@ -235,36 +235,32 @@ static int pmic_setup(void)
 		}
 	}
 
+	sunxi_pmic_write(0x15, 0x1a);	/* DLDO1 = VCC3V3_HDMI voltage = 3.3V */
+	sunxi_pmic_write(0x16, 0x12);	/* DLDO2 = VCC2V5_EDP voltage = 2.5V */
+	sunxi_pmic_write(0x1c, 0xa);	/* FLDO1 = VCC1V2_EDP voltage = 1.2V */
+
 	ret = sunxi_pmic_read(0x12);
-	if ((ret & 0x37) != 0x01) {
+	if ((ret & 0x27) != 0x01) {
 		NOTICE("PMIC: Output power control 2 is an unexpected 0x%x\n",
 		       ret);
 		return -3;
 	}
 
-	if ((ret & 0xc9) != 0xc9) {
-		/* Enable DC1SW to power PHY, DLDO4 for WiFi and DLDO1 for HDMI */
-		ret = sunxi_pmic_write(0x12, ret | 0xc8);
+	if ((ret & 0xd9) != 0xd9) {
+		/*
+		 * Enable DC1SW to power PHY, DLDO4 for WiFi,
+		 * DLDO1 for HDMI and DLDO2 for eDP bridge
+		 */
+		ret = sunxi_pmic_write(0x12, ret | 0xd8);
 		if (ret < 0) {
-			NOTICE("PMIC: error %d enabling DC1SW/DLDO4/DLDO1\n", ret);
+			NOTICE("PMIC: error %d enabling DC1SW/DLDO4/DLDO1/DLDO2\n", ret);
 			return -4;
 		}
 	}
 
-	/*
-	 * On the Pine64 the AXP is wired wrongly: to reset DCDC5 to 1.24V.
-	 * However the DDR3L chips require 1.36V instead. Fix this up. Other
-	 * boards hopefully do the right thing here and don't require any
-	 * changes. This should be further confined once we are able to
-	 * reliably detect a Pine64 board.
-	 */
-	ret = sunxi_pmic_read(0x24);	/* read DCDC5 register */
-	if ((ret & 0x7f) == 0x26) {	/* check for 1.24V value */
-		NOTICE("PMIC: fixing DRAM voltage from 1.24V to 1.36V\n");
-		sunxi_pmic_write(0x24, 0x2c);
-	}
- 
-	sunxi_pmic_write(0x15, 0x1a);	/* DLDO1 = VCC3V3_HDMI voltage = 3.3V */
+	ret = sunxi_pmic_read(0x13);
+	/* Enable FLDO1 to power up eDP bridge */
+	ret = sunxi_pmic_write(0x13, ret | 0x4);
 
 	return 0;
 }
