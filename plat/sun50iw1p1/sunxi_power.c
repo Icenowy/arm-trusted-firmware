@@ -262,6 +262,9 @@ static int pmic_setup(void)
 	/* Enable FLDO1 to power up eDP bridge */
 	ret = sunxi_pmic_write(0x13, ret | 0x4);
 
+	sunxi_pmic_write(0x91, 0x1a);	/* GPIO0LDO voltage = 3.3V */
+	sunxi_pmic_write(0x90, 0x3);	/* Enable GPIO0LDO */
+
 	return 0;
 }
 
