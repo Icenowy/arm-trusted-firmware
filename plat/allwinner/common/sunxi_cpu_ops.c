@@ -13,36 +13,29 @@
 
 #include "sunxi_private.h"
 
-/* c = cluster, n = core */
-#define SUNXI_R_PRCM_CPUS_CFG_REG		(SUNXI_R_PRCM_BASE + 0x0000)
-#define SUNXI_R_PRCM_PWROFF_GATING_REG(c)				\
-	(SUNXI_R_PRCM_BASE + 0x0100 + (c) * 0x04)
-#define SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(c, n)				\
-	(SUNXI_R_PRCM_BASE + 0x0140 + (c) * 0x10 + (n) * 0x04)
-
 static void sunxi_cpu_disable_power(unsigned int cluster, unsigned int core)
 {
-	if (mmio_read_32(SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(cluster, core)) == 0xff)
+	if (mmio_read_32(SUNXI_CPU_PWR_CLAMP_REG(cluster, core)) == 0xff)
 		return;
 
 	INFO("PSCI: Disabling power to cluster %d core %d\n", cluster, core);
 
-	mmio_write_32(SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(cluster, core), 0xff);
+	mmio_write_32(SUNXI_CPU_PWR_CLAMP_REG(cluster, core), 0xff);
 }
 
 static void sunxi_cpu_enable_power(unsigned int cluster, unsigned int core)
 {
-	if (mmio_read_32(SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(cluster, core)) == 0)
+	if (mmio_read_32(SUNXI_CPU_PWR_CLAMP_REG(cluster, core)) == 0)
 		return;
 
 	INFO("PSCI: Enabling power to cluster %d core %d\n", cluster, core);
 
 	/* Power enable sequence from original Allwinner sources */
-	mmio_write_32(SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(cluster, core), 0xfe);
-	mmio_write_32(SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(cluster, core), 0xf8);
-	mmio_write_32(SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(cluster, core), 0xe0);
-	mmio_write_32(SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(cluster, core), 0x80);
-	mmio_write_32(SUNXI_R_PRCM_CPU_PWR_CLAMP_REG(cluster, core), 0x00);
+	mmio_write_32(SUNXI_CPU_PWR_CLAMP_REG(cluster, core), 0xfe);
+	mmio_write_32(SUNXI_CPU_PWR_CLAMP_REG(cluster, core), 0xf8);
+	mmio_write_32(SUNXI_CPU_PWR_CLAMP_REG(cluster, core), 0xe0);
+	mmio_write_32(SUNXI_CPU_PWR_CLAMP_REG(cluster, core), 0x80);
+	mmio_write_32(SUNXI_CPU_PWR_CLAMP_REG(cluster, core), 0x00);
 }
 
 void sunxi_cpu_off(unsigned int cluster, unsigned int core)
@@ -52,7 +45,7 @@ void sunxi_cpu_off(unsigned int cluster, unsigned int core)
 	/* Deassert DBGPWRDUP */
 	mmio_clrbits_32(SUNXI_CPUCFG_DBG_REG0, BIT(core));
 	/* Activate the core output clamps */
-	mmio_setbits_32(SUNXI_R_PRCM_PWROFF_GATING_REG(cluster), BIT(core));
+	mmio_setbits_32(SUNXI_PWROFF_GATING_REG(cluster), BIT(core));
 	/* Assert CPU power-on reset */
 	mmio_clrbits_32(SUNXI_R_CPUCFG_PWRONRST_REG(cluster), BIT(core));
 	/* Remove power from the CPU */
@@ -72,7 +65,7 @@ void sunxi_cpu_on(unsigned int cluster, unsigned int core)
 	/* Apply power to the CPU */
 	sunxi_cpu_enable_power(cluster, core);
 	/* Release the core output clamps */
-	mmio_clrbits_32(SUNXI_R_PRCM_PWROFF_GATING_REG(cluster), BIT(core));
+	mmio_clrbits_32(SUNXI_PWROFF_GATING_REG(cluster), BIT(core));
 	/* Deassert CPU power-on reset */
 	mmio_setbits_32(SUNXI_R_CPUCFG_PWRONRST_REG(cluster), BIT(core));
 	/* Deassert CPU core reset */

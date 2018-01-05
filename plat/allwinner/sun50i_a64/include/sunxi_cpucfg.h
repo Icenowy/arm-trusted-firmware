@@ -30,6 +30,9 @@
 #define SUNXI_R_CPUCFG_SS_ENTRY_REG	(SUNXI_R_CPUCFG_BASE + 0x01a8)
 #define SUNXI_R_CPUCFG_HP_FLAG_REG	(SUNXI_R_CPUCFG_BASE + 0x01ac)
 
+#define SUNXI_PWROFF_GATING_REG(c)	(SUNXI_R_PRCM_BASE + 0x0100 + (c) * 0x04)
+#define SUNXI_CPU_PWR_CLAMP_REG(c, n)	(SUNXI_R_PRCM_BASE + 0x0140 + (c) * 0x10 + (n) * 0x04)
+
 /* Magic values to enable the entry points (from boot ROM) */
 #define SUNXI_HOTPLUG_MAGIC		0xfa50392f
 #define SUNXI_STANDBY_MAGIC		0x0000efe8
