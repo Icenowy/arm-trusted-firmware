@@ -263,10 +263,12 @@ static int pmic_setup(const char *dt_name)
 	/* Enable the LCD power planes to get the display up early. */
 	if (!strcmp(dt_name, "sun50i-a64-pinebook")) {
 		sunxi_pmic_write(0x16, 0x12); /* DLDO2 = VCC-MIPI = 2.5V */
+		sunxi_pmic_write(0x1c, 0x0a); /* FLDO1 = HSIC = 1.2V */
+
 		ret = sunxi_pmic_read(0x12);
 		sunxi_pmic_write(0x12, ret | 0x10);
+		udelay(2000);
 
-		sunxi_pmic_write(0x1c, 0x0a); /* FLDO1 = HSIC = 1.2V */
 		ret = sunxi_pmic_read(0x13);
 		sunxi_pmic_write(0x13, ret | 0x4);
 
