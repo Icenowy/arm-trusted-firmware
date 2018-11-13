@@ -273,6 +273,11 @@ static int pmic_setup(const char *dt_name)
 		sunxi_pmic_write(0x13, ret | 0x4);
 
 		INFO("PMIC: enabled Pinebook display\n");
+
+		ret = sunxi_pmic_read(0x32);
+		sunxi_pmic_write(0x32, ret | 0x8);
+
+		INFO("PMIC: enabled Pinebook charge LED\n");
 	}
 
 	/* The same thing, but for TERES I */
